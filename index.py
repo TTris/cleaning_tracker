@@ -14,3 +14,6 @@ def home():
 def login():
     return render_template("login.html")
 
+# 本地開發使用，部署vercel時會被忽略
+if __name__ == "__main__":
+    app.run(debug=True)

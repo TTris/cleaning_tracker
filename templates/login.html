@@ -2,14 +2,19 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8">
-  <title>登入頁面</title>
+  <title>Cleaning Tracker 登入頁面</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
   <h2>請登入 / 註冊</h2>
   <form id="login-form">
-    <input type="email" placeholder="Email" required><br>
-    <input type="password" placeholder="Password" required><br>
-    <button type="submit">登入</button>
+    <input type="email" id="email" placeholder="Email" required><br>
+    <input type="password" id="password" placeholder="Password" required><br>
+    <button type="submit" id="submit">登入/註冊</button>
+    <button type="button" id="forget-pw-btn">忘記密碼</button>
   </form>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>

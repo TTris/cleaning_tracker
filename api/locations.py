@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, Blueprint
+from flask import request, jsonify, Blueprint
 from .db import get_db_conn
 from .auth import require_auth
 
@@ -24,7 +24,7 @@ def handle_locations(user_id):
         conn.commit()
         return jsonify({"id": new_id, "name": data["name"]})
 
-# for dev purpose, no need for authorization
+# for postman dev purpose, no need for authorization
 @locations_bp.route("/api/locations/dev", methods=["GET", "POST"])
 def handle_locations_dev():
     conn = get_db_conn()
