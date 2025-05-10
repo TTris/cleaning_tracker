@@ -14,6 +14,10 @@ def home():
 def login():
     return render_template("login.html")
 
+@app.route("/reset-password")
+def reset_psw():
+    return render_template("reset-password.html")
+
 # 本地開發使用，部署vercel時會被忽略
 if __name__ == "__main__":
     app.run(debug=True)

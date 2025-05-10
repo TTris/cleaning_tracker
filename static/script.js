@@ -23,17 +23,31 @@ if (form) {
         const { data:signInData, error:signInError } = await supabase.auth.signInWithPassword({ email, password });
 
         if (signInError) {
-            // 登錄失敗，改為註冊
-            const { error:signUpError } = await supabase.auth.signUp({ email, password });
-            if (signUpError) {
-                alert("註冊失敗：" + signUpError.message);
-                document.getElementById("email").value = "";
+            // check signInError 
+            const message = signInError.message.toLowerCase();
+            if (message.includes("invalid login credentials") || message.includes("invalid email or password")) {
+                alert("帳號或密碼錯誤！");
                 document.getElementById("password").value = "";
-                return
-            } else {
-                alert("註冊成功！請收驗證信");
                 return;
             }
+
+            // if no user found, sign-up
+            if (message.includes("user not found") || message.includes("user does not exist")) {
+                const { error:signUpError } = await supabase.auth.signUp({ email, password });
+                if (signUpError) {
+                    alert("註冊失敗：" + signUpError.message);
+                    document.getElementById("email").value = "";
+                    document.getElementById("password").value = "";
+                    return
+                } else {
+                    alert("註冊成功！請收驗證信");
+                    return;
+                }
+            }
+            //for other signIn error
+            alert("登入失敗："+ signInError.message);
+            return
+        
         } else {
             //登錄成功，取得並儲存token
             const accessToken = signInData?.session?.access_token;
@@ -61,7 +75,7 @@ if (form) {
             document.getElementById("password").value = "";
             return;
         }
-        const { data, error } = await supabase.auth.restPasswordForEmail(email);
+        const { data, error } = await supabase.auth.resetPasswordForEmail(email);
         if (error) {
             alert("發送失敗：" + error.message);
         } else {
@@ -377,21 +391,63 @@ function isTokenExpired(token) {
     }
 }
 
+// for forget password
+const resetPasswordBtn = document.getElementById("update-password-btn")
+if (resetPasswordBtn) {
+    resetPasswordBtn.addEventListener("click", async () => {
+        const newPassword = document.getElementById("new-password").value.trim();
+        if (!newPassword) {
+        alert("請輸入新密碼");
+        return;
+        }
+        const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) {
+        alert("密碼更新失敗：" + error.message);
+        } else {
+        alert("密碼更新成功，請重新登入！");
+        localStorage.removeItem("access_token");
+        window.location.href = "/login";
+        }
+    });
+}
 
 // 自動渲染邏輯
 window.addEventListener("DOMContentLoaded", async () => {
+    const hashParams = new URLSearchParams(window.location.hash.substring(1)); 
+    const accessToken = hashParams.get("access_token");
+    const type = hashParams.get("type");
+
+    // for forget password
+    if (accessToken && type === "recovery") {
+        try {
+            const { data, error } = await supabase.auth.setSession({ access_token: accessToken, refresh_token: accessToken });
+            if (error) {
+                console.error("Exchange session failed", error.message);
+                alert("登入失敗，請重新操作重設密碼");
+                window.location.href = "/login";
+                return;
+            }
+            localStorage.setItem("access_token", data.session.access_token);
+            alert("請設定新密碼");
+            window.location.href = "/reset-password";
+            return; 
+        } catch (e) {
+            console.error("Exchange session failed", e);
+            alert("發生錯誤，請重新操作重設密碼");
+            window.location.href = "/login";
+            return;
+        }
+    }
+
     const path = window.location.pathname;
-
     if (path === "/") {
-        const token = localStorage.getItem("access_token");
-
-        if (!token || isTokenExpired(token)) {
+        const localToken = localStorage.getItem("access_token");
+        if (!localToken || isTokenExpired(localToken)) {
             alert("登入逾期，請重新登入");
             localStorage.removeItem("access_token");
             window.location.href = "/login";
             return;
         }
-        
         loadAndRenderCleaningTable();
     }
 });
