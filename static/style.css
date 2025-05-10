@@ -1,0 +1,51 @@
+.cleaning-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.cleaning-table th, .cleaning-table td {
+  border: 1px solid #ccc;
+  text-align: center;
+  padding: 5px;
+}
+.weekend {
+  background-color: #eee;
+}
+.trash-btn {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.add-location-input {
+  width: 200px;
+  padding: 5px;
+}
+#logout-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.edit-location-input {
+  width: 100px;
+  margin-right: 5px;
+  padding: 3px;
+}
+.confirm-btn {
+  background-color: lightgreen;
+  border: none;
+  padding: 2px 5px;
+  cursor: pointer;
+}
+.edit-btn {
+  margin-left: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
