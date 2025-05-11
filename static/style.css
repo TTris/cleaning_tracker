@@ -11,7 +11,7 @@
   background-color: #eee;
 }
 .trash-btn {
-  margin-left: 5px;
+  margin-left: 3px;
   background: none;
   border: none;
   cursor: pointer;
@@ -34,7 +34,7 @@
 
 .edit-location-input {
   width: 100px;
-  margin-right: 5px;
+  margin-right: 3px;
   padding: 3px;
 }
 .confirm-btn {
@@ -48,4 +48,10 @@
   background: none;
   border: none;
   cursor: pointer;
+}
+
+.today {
+  border: 3px solid #1976d2;
+  background-color: #e3f2fd;
+  box-shadow: 0 0 1px #1976d2;
 }

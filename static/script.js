@@ -19,49 +19,53 @@ if (form) {
         };
         
         // 先嘗試登錄 無法登錄就註冊
-        // 登錄
-        const { data:signInData, error:signInError } = await supabase.auth.signInWithPassword({ email, password });
-
-        if (signInError) {
-            // check signInError 
-            const message = signInError.message.toLowerCase();
-            if (message.includes("invalid login credentials") || message.includes("invalid email or password")) {
-                alert("帳號或密碼錯誤！");
-                document.getElementById("password").value = "";
+        try {
+            // login
+            const { data:signInData, error:signInError } = await supabase.auth.signInWithPassword({ email, password });
+            if (signInData?.session) {
+                // login successful, store access_token
+                const accessToken = signInData?.session?.access_token;
+                localStorage.setItem("access_token", accessToken);
+                alert("登入成功，轉跳主畫面");
+                window.location.href = "/";
                 return;
             }
 
-            // if no user found, sign-up
-            if (message.includes("user not found") || message.includes("user does not exist")) {
-                const { error:signUpError } = await supabase.auth.signUp({ email, password });
+            // login failed, try signUp
+            if (signInError?.message.includes("Invalid login credentials")) {
+                const { data:signUpData , error:signUpError } = await supabase.auth.signUp({ email, password});
+                
                 if (signUpError) {
-                    alert("註冊失敗：" + signUpError.message);
-                    document.getElementById("email").value = "";
-                    document.getElementById("password").value = "";
-                    return
-                } else {
-                    alert("註冊成功！請收驗證信");
+                    if (signUpError.code === "weak_password") {
+                        alert("密碼至少需輸入6字元");
+                    } else {
+                        alert("註冊失敗：" + signUpError.message);
+                    }
                     return;
                 }
+                if (signUpData && signUpData.user) {
+                    // if length of data.identities = 0, user exist
+                    if (signUpData.user.identities.length===0) {
+                        alert("此帳號已存在，請輸入正確密碼");
+                        document.getElementById("password").value = ""
+                    } else {
+                        alert("註冊成功！請至信箱收驗證信");
+                    }
+                }
+            } else {
+                alert("登入失敗：" + signInError.message);
             }
-            //for other signIn error
-            alert("登入失敗："+ signInError.message);
-            return
-        
-        } else {
-            //登錄成功，取得並儲存token
-            const accessToken = signInData?.session?.access_token;
-            localStorage.setItem("access_token", accessToken);
-            alert("登入成功，轉跳主畫面");
-            window.location.href = "/";
-        };
-
+        } catch (error) {
+            console.error(error);
+            alert("發生未知錯誤，請稍後再試");
+        }
     });
 
 
     // 忘記密碼
     document.getElementById("forget-pw-btn")?.addEventListener("click", async() => {
         const email = document.getElementById("email").value.trim();
+
         // Email防呆
         if (!email) {
             alert("請輸入Email");
@@ -198,6 +202,16 @@ async function loadAndRenderCleaningTable() {
 
         th.innerText = `${day}(${weekDay})`;
         
+        // mark today
+        const today = new Date();
+        if (
+            date.getFullYear() === today.getFullYear() &&
+            date.getMonth() === today.getMonth() &&
+            date.getDate() === today.getDate()
+        ) {
+            th.classList.add("today");
+        }
+
         if (date.getDay() === 0 || date.getDay() === 6) {  // ✅ 判斷星期六日
             th.classList.add("weekend");
         }
@@ -285,6 +299,15 @@ async function loadAndRenderCleaningTable() {
     
             if (recordMap[loc.id] && recordMap[loc.id].has(dateStr)) {
                 checkbox.checked = true;
+            }
+
+            // mark today
+            if (
+                date.getFullYear() === today.getFullYear() &&
+                date.getMonth() === today.getMonth() &&
+                date.getDate() === today.getDate()
+            ) {
+                td.classList.add("today");
             }
     
             checkbox.addEventListener("change", async () => {
