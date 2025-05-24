@@ -465,12 +465,14 @@ window.addEventListener("DOMContentLoaded", async () => {
     const path = window.location.pathname;
     if (path === "/") {
         const localToken = localStorage.getItem("access_token");
-        if (!localToken || isTokenExpired(localToken)) {
+        if (localToken && isTokenExpired(localToken)) {
             alert("登入逾期，請重新登入");
             localStorage.removeItem("access_token");
             window.location.href = "/login";
             return;
         }
-        loadAndRenderCleaningTable();
+        if (localToken) {
+            loadAndRenderCleaningTable();
+        };
     }
 });

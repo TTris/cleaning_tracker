@@ -2,8 +2,12 @@
 import os
 import psycopg2
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(".env"))
+
+env_file = ".env.test" if os.getenv("ENV") == "test" else ".env"
+load_dotenv(dotenv_path=Path(env_file), override=True)
 
 def get_db_conn():
     return psycopg2.connect(os.getenv("SUPABASE_DB_URL"))
