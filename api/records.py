@@ -31,10 +31,11 @@ def handle_records(user_id):
                 VALUES (%s, %s, %s, %s)
                 ON CONFLICT (user_id, location_id, date)
                 DO UPDATE SET cleaned = EXCLUDED.cleaned
+                RETURNING id    
             """, (user_id, location_id, date, cleaned))
-
+            new_id = cur.fetchone()[0]
             conn.commit()
-            return jsonify({"message":"Record Updated"}), 200
+            return jsonify({"id": new_id, "date": date, "cleaned": cleaned}), 200
     
     except Exception as e:
         conn.rollback()

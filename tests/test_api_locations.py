@@ -65,6 +65,54 @@ class LocationsApiTests(unittest.TestCase):
         data = response.get_json()
         self.assertTrue(len(data) >= 1)
         self.assertIn("name", data[0])
+    
+    def test_delete_location(self):
+        create_response = self.app.post(
+            "/api/locations",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps({"name":"to_delete_loc"}),
+            content_type = "application/json"
+        )
+        location_id = create_response.get_json()["id"]
+        delete_response = self.app.delete(
+            f"/api/locations/{location_id}",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+        )
+        self.assertEqual(delete_response.status_code, 200)
+        self.assertIn("message", delete_response.get_json())
+
+        get_response = self.app.get(
+            "/api/locations",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+        )
+        names = [loc["name"] for loc in get_response.get_json()]
+        self.assertNotIn("to_delete_loc", names)
+    
+    def test_patch_location(self):
+        create_response = self.app.post(
+            "/api/locations",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps({"name": "old_name"}),
+            content_type = "application/json"
+        )
+        location_id = create_response.get_json()["id"]
+
+        patch_response = self.app.patch(
+            f"/api/locations/{location_id}",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps({"name": "new_name"}),
+            content_type = "application/json"
+        )
+        self.assertEqual(patch_response.status_code, 200)
+
+        get_response = self.app.get(
+            "/api/locations",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+        )
+        names = [loc["name"] for loc in get_response.get_json()]
+        self.assertIn("new_name", names)
+        self.assertNotIn("old_name", names)
+ 
 
 if __name__ == "__main__":
     unittest.main()
