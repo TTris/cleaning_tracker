@@ -46,7 +46,7 @@ class RecordsApiTests(unittest.TestCase):
         self.location_id = test_location_res.get_json()["id"]
 
     def test_create_record(self):
-        today = str(datetime.datetime.now())[:10]
+        today = datetime.datetime.now().date().isoformat()
         payload = {
             "location_id": self.location_id,
             "date": today,
@@ -64,3 +64,64 @@ class RecordsApiTests(unittest.TestCase):
         self.assertIn("id", data)
         self.assertEqual(data["date"], today)
     
+    def test_get_records(self):
+        today = datetime.datetime.now().date().isoformat()
+        payload = {
+            "location_id": self.location_id,
+            "date": today,
+            "cleaned": True
+        }
+        post_response = self.app.post(
+            "/api/records",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps(payload),
+            content_type = "application/json"
+        )
+        self.assertEqual(post_response.status_code, 200)
+
+        get_response = self.app.get(
+            "/api/records",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+        )
+        self.assertEqual(get_response.status_code, 200)
+        data = get_response.get_json()
+        self.assertTrue(len(data) >= 1)
+        self.assertIn("date", data[0])
+    
+    def test_update_record(self):
+        today = datetime.datetime.now().date().isoformat()
+        old_response = self.app.post(
+            "/api/records",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps({
+                "location_id": self.location_id,
+                "date": today,
+                "cleaned": True
+            }),
+            content_type = "application/json"
+        )
+        self.assertEqual(old_response.status_code, 200)
+
+        new_response = self.app.post(
+            "/api/records",
+            headers = {"Authorization": f"Bearer {self.access_token}"},
+            data = json.dumps({
+                "location_id": self.location_id,
+                "date": today,
+                "cleaned": False
+            }),
+            content_type = "application/json"
+        )
+        self.assertEqual(new_response.status_code, 200)
+
+        get_response = self.app.get(
+            "/api/records",
+            headers = {"Authorization": f"Bearer {self.access_token}"}
+        )
+        self.assertEqual(get_response.status_code, 200)
+
+        data = get_response.get_json()
+        target_rec = [rec for rec in data if rec["date"]==today]
+        self.assertTrue(len(target_rec) == 1)
+        self.assertEqual(target_rec[0]["location_id"], self.location_id)
+        self.assertFalse(target_rec[0]["cleaned"])
