@@ -17,13 +17,20 @@ def handle_locations(user_id):
             return jsonify([{"id": r[0], "name": r[1]} for r in rows])
 
         elif request.method == "POST":
+            # 資料防呆及增加報錯可讀性
             data = request.get_json()
-            print("data: ", data)
+            if not data:
+                return jsonify({"error": "Invalid or missing JSON body"}), 400
+            
+            name = data.get("name", "")
+            if not name:
+                return jsonify({"error": "missing name"}), 400
+            
             cur.execute("INSERT INTO locations (user_id, name) VALUES (%s, %s) RETURNING id",
-                        (user_id, data["name"]))
+                        (user_id, name))
             new_id = cur.fetchone()[0]
             conn.commit()
-            return jsonify({"id": new_id, "name": data["name"]})
+            return jsonify({"id": new_id, "name": name})
     
     except Exception as e:
         conn.rollback()

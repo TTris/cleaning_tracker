@@ -125,3 +125,6 @@ class RecordsApiTests(unittest.TestCase):
         self.assertTrue(len(target_rec) == 1)
         self.assertEqual(target_rec[0]["location_id"], self.location_id)
         self.assertFalse(target_rec[0]["cleaned"])
+
+if __name__ == "__main__":
+    unittest.main()
