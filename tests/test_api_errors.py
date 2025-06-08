@@ -58,6 +58,7 @@ class ApiErrorTests(unittest.TestCase):
     
     def test_unauthorized_access_no_token(self):
         loc_get_response = self.app.get("/api/locations")
+        print(loc_get_response)
         self.assertEqual(loc_get_response.status_code, 401)
 
         loc_post_response = self.app.post(

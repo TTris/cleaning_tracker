@@ -11,18 +11,13 @@ def get_user_id():
      try:
           header = request.headers.get("Authorization")
           if (not header) or (not header.startswith("Bearer ")):
-               return jsonify({"Error": "Unauthorized"}), 401
-          token = header.split("")[1]
-          try:
-               payload = jwt.decode(token, os.getenv("SUPABASE_JWT_SECRET"), algorithms=["HS256"],audience="authenticated")
-               return payload.get("sub")
-          except jwt.ExpiredSignatureError:
-               return jsonify({"Error": "Token expired"}), 401
-          except jwt.InvalidTokenError:
-               return jsonify({"Error": "Invalid token"}), 401
-          
+               return None
+          token = header.split(" ")[1]
+          payload = jwt.decode(token, os.getenv("SUPABASE_JWT_SECRET"), algorithms=["HS256"],audience="authenticated")
+          return payload.get("sub")
+
      except Exception as e:
-          print("Error",str(e))
+          print("Error", e)
           return None
 
 def require_auth(func):
